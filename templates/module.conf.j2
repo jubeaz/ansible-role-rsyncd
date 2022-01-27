@@ -1,0 +1,6 @@
+{{ ansible_managed | comment }}
+[{{ item.name }}]
+
+{% for key,value in item.params.items() %}
+{{ key }} = {{ value }}
+{% endfor %}

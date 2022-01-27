@@ -1,0 +1,6 @@
+---
+- name: Install Rsync
+  pacman:
+    name: rsync
+    state: present
+    update_cache: true

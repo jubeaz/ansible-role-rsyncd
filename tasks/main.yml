@@ -1,0 +1,60 @@
+---
+- include_tasks: variables.yml
+- include_tasks: asserts.yml
+
+- include_tasks: ubuntu.yml
+  when: ansible_distribution == "Ubuntu"
+- include_tasks: arch.yml
+  when: ansible_distribution == "Archlinux"
+
+- name: Get installed packages
+  package_facts:
+    manager: "auto"
+
+- name: Add ufw allow rules
+  ufw:
+    rule: allow
+    direction: in
+    src: "{{ item }}"
+    to_port: "{{ rsyncd_port }}"
+    state: enabled
+  when: "'ufw' in ansible_facts.packages"
+  loop: "{{ rsyncd_firewall_allow }}"
+
+
+- name: Create dropIn directory
+  file:
+    path: /etc/rsyncd.d
+    state: directory
+    owner: root
+    group: root
+    mode: 0740
+
+- name: Create rsyncd.conf
+  template:
+    src: templates/rsyncd.conf.j2
+    dest: /etc/rsyncd.conf
+    owner: root
+    group: root
+    mode: 0640
+  notify: restart rsyncd
+
+- name: Create Create modules config
+  template:
+    src: templates/module.conf.j2
+    dest: "/etc/rsyncd.d/{{ item.name }}.conf"
+    owner: root
+    group: root
+    mode: 0640
+  loop: "{{ rsyncd_modules }}"
+  notify: restart rsyncd
+
+- name: Create modules directories
+  file:
+    path: "{{ item.params.path}}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+  loop: "{{ rsyncd_modules }}"
+
