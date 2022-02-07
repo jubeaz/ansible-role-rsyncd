@@ -8,8 +8,7 @@ rsyncd_params:
   "lock file": /var/run/rsync.lock
 
 rsyncd_modules:
-  #  - name: my_module
-  #    params: {
+  #  name: {
   #      comment: "my_comment",
   #      path: my_path
   #    }

@@ -39,22 +39,39 @@
     mode: 0640
   notify: restart rsyncd
 
+- name: list files to delete
+  find:
+    paths: /etc/rsyncd.d
+    file_type: file
+    patterns: '*.conf'
+    excludes: "{{ rsyncd_modules.keys() | product(['.conf']) | map('join') | list }}"
+  register: __modules_to_delete
+
 - name: Create Create modules config
   template:
     src: templates/module.conf.j2
-    dest: "/etc/rsyncd.d/{{ item.name }}.conf"
+    dest: "/etc/rsyncd.d/{{ item }}.conf"
     owner: root
     group: root
     mode: 0640
-  loop: "{{ rsyncd_modules }}"
+  loop: "{{ rsyncd_modules.keys() }}"
   notify: restart rsyncd
+
+- name: Delete obsolete modules
+  file:
+    path: "{{ item.path }}"
+    state: absent
+    owner: root
+    group: root
+    mode: 0700
+  loop: "{{ __modules_to_delete.files }}"
 
 - name: Create modules directories
   file:
-    path: "{{ item.params.path}}"
+    path: "{{ rsyncd_modules[item].path }}"
     state: directory
     owner: root
     group: root
     mode: 0700
-  loop: "{{ rsyncd_modules }}"
+  loop: "{{ rsyncd_modules.keys() }}"
 
