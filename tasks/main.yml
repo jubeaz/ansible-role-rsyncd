@@ -21,6 +21,23 @@
   when: "'ufw' in ansible_facts.packages"
   loop: "{{ rsyncd_firewall_allow }}"
 
+- name: Install script
+  template:
+    src: rsyncd-clean.sh.j2
+    dest: /usr/bin/rsyncd-clean.sh
+    mode: 0740
+    owner: root
+    group: root
+
+- name: Cron  rsyncd clean  script
+  copy:
+    dest: /etc/cron.d/rsyncd-clean.cron
+    src: rsyncd-clean.cron
+    mode: 0644
+    owner: root
+    group: root
+  notify: restart cron
+
 
 - name: Create dropIn directory
   file:

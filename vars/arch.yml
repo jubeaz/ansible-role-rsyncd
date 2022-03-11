@@ -1,2 +1,3 @@
 ---
 rsyncd_service_name: rsyncd
+cron_service_name: "cronie.service"
